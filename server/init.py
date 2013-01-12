@@ -86,5 +86,5 @@ def create_user(ident,name):
     return redirect(url_for("get_user_info",ident=ident))
     
 if __name__ == "__main__":
-    app.debug = True
-    app.run()
+    app.debug = False
+    app.run("0.0.0.0")
