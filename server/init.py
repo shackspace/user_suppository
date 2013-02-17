@@ -22,7 +22,7 @@ def write_db(db):
 @app.route("/user/online")
 def list_online_users():
     db = read_db()
-    return json.dumps([user['name'] for ident,user in db.iteritems() if user['online']])
+    return json.dumps({"users": [user['name'] for ident,user in db.iteritems() if user['online']]})
 
 @app.route("/user/<ident>/online")
 def user_is_online(ident):
