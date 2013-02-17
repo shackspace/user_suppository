@@ -2,27 +2,19 @@ import json
 
 import hashlib
 import os.path
+import redis
 from flask import Flask,abort, redirect, url_for
 app = Flask(__name__)
 ## db : 
 ##     key = hashedId
 ##     value = { 'name': 'Bob Ross',online: false}
 
-DB_FILE= 'users.json'
-
-def read_db():
-    if not os.path.isfile(DB_FILE):
-        write_db({})    
-    return json.load(open(DB_FILE,'r'))
-
-def write_db(db):
-    json.dump(db,open(DB_FILE,'w+'))
-
+REDIS_SERVER = "glados.shack"
+r = redis.StrictRedis(host=REDIS_SERVER, port=6379, db=0)
 
 @app.route("/user/online")
 def list_online_users():
-    db = read_db()
-    return json.dumps({"users": [user['name'] for ident,user in db.iteritems() if user['online']]})
+    return json.dumps()
 
 @app.route("/user/<ident>/online")
 def user_is_online(ident):
