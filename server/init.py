@@ -6,6 +6,8 @@ import redis
 from flask import Flask,abort, redirect, url_for
 app = Flask(__name__)
 db={}
+NS="users."
+NSL=NS+"list."
 ## db : 
 ##     key = hashedId
 ##     value = { 'name': 'Bob Ross',online: false}
@@ -15,11 +17,11 @@ r = redis.StrictRedis(host=REDIS_SERVER, port=6379, db=0)
 
 @app.route("/user/online")
 def list_online_users():
-    ret= {"users":[]}
-    for uid in r.smembers("users.all"):
-        if r.get("users.list."+uid+".online"):
-            nick = r.get("users.list."+uid+".online")
-            ret["users"].append(nick)
+    ret= []
+    for uid in r.smembers(NS+"all"):
+        if r.get(NSL+uid+".online"):
+            nick = r.get(NSL+uid+".name")
+            ret.append(nick)
 
     return json.dumps(ret)
 
@@ -29,62 +31,62 @@ def user_is_online(ident):
     TODO generate hash from uid (default is currently RFID-UID)
     """
     hashedId = hashlib.md5(ident).hexdigest()
-    if not r.ismemeber("users.all",hashedId): abort(404)
-    return json.dumps(r.exists(("users.list."+hashedId+".online")))
+    if not r.sismember(NS+"all",hashedId): abort(404)
+    return json.dumps(r.exists((NSL+hashedId+".online")))
 
 @app.route("/user/<ident>/name")
 def user_name(ident):
     hashedId = hashlib.md5(ident).hexdigest()
-    if not r.ismemeber("users.all",hashedId): abort(404)
+    if not r.sismember(NS+"all",hashedId): abort(404)
 
-    return json.dumps(r.get(("users.list."+hashedId+".name")))
+    return json.dumps(r.get((NSL+hashedId+".name")))
 
 @app.route("/user/<ident>/login")
 def user_login(ident):
     hashedId = hashlib.md5(ident).hexdigest()
-    if not r.ismemeber("users.all",hashedId): abort(404)
+    if not r.sismember(NS+"all",hashedId): abort(404)
 
-    r.rpush("users.list."+hashedId+".history",str(time.time())+";login")
-    r.setex("users.list."+hashedId+".online",True,86400)
+    r.rpush(NSL+hashedId+".history",str(time.time())+" login")
+    r.setex(NSL+hashedId+".online",86400,"True")
     return redirect(url_for("get_user_info",ident=ident))
 
 @app.route("/user/<ident>/logout")
 def user_logout(ident):
     hashedId = hashlib.md5(ident).hexdigest()
-    if not r.ismemeber("users.all",hashedId): abort(404)
+    if not r.sismember(NS+"all",hashedId): abort(404)
 
-    r.rpush("users.list."+hashedId+".history",str(time.time())+";logout")
-    r.delete("users.list."+hashedId+".online")
+    r.rpush(NSL+hashedId+".history",str(time.time())+" logout")
+    r.delete(NSL+hashedId+".online")
 
     return redirect(url_for("get_user_info",ident=ident))
 
 @app.route("/user/list")
 def list_users():
-    ret= {"users":[]}
-    for uid in r.smembers("users.all"):
-        nick = r.get("users.list."+uid+".nick")
-        ret["users"].append(nick)
-    return json.dumps(ret,indent=2)
+    ret= []
+    for uid in r.smembers(NS+"all"):
+        nick = r.get(NSL+uid+".name")
+        ret.append(nick)
+    return json.dumps(ret)
 
 @app.route("/user/<ident>")
 def get_user_info(ident):
     hashedId = hashlib.md5(ident).hexdigest()
-    if not r.sismember("users.all",hashedId): abort(404)
+    if not r.sismember(NS+"all",hashedId): abort(404)
     user = {}
-    user["name"] = r.get("users.list."+hashedId+".name")
-    user["online"] = r.get("users.list."+hashedId+".online")
-    user["history"] = r.get("users.list."+hashedId+".history")
+    user["name"] = r.get(NSL+hashedId+".name")
+    user["online"] = r.get(NSL+hashedId+".online")
+    user["history"] = r.lrange(NSL+hashedId+".history",0,-1)
     return json.dumps(user)
 
 
 @app.route("/user/create/<ident>/<name>")
 def create_user(ident,name):
-    db = read_db()
     hashedId = hashlib.md5(ident).hexdigest()
-    if r.ismemeber("users.all",hashedId):
+    if r.sismember(NS+".all",hashedId):
         return abort(403)
     else:
-        r.set("users.list."+hashedId+".name")
+        r.set(NSL+hashedId+".name",name)
+        r.sadd(NS+"all",hashedId)
     return redirect(url_for("get_user_info",ident=ident))
     
 if __name__ == "__main__":
