@@ -3,27 +3,39 @@ import time
 import hashlib
 import os.path
 import redis
-from flask import Flask,abort, redirect, url_for
+from flask import Flask,abort, redirect, url_for,render_template
 app = Flask(__name__)
 db={}
 NS="users."
 NSL=NS+"list."
-## db : 
-##     key = hashedId
-##     value = { 'name': 'Bob Ross',online: false}
 
 REDIS_SERVER = "glados.shack"
 r = redis.StrictRedis(host=REDIS_SERVER, port=6379, db=0)
+@app.route("/")
+def index():
+    return render_template('index.html')
+
+@app.route("/register")
+def register():
+    return render_template('register.html')
+
+@app.route("/online")
+def online():
+    return render_template('list_users.html',users=list_online_users())
+
+@app.route("/all")
+def all_users():
+    return render_template('list_users.html',users=list_users())
 
 @app.route("/user/online")
-def list_online_users():
-    ret= []
-    for uid in r.smembers(NS+"all"):
-        if r.get(NSL+uid+".online"):
-            nick = r.get(NSL+uid+".name")
-            ret.append(nick)
+def json_online():
+    return json.dumps(list_online_users())
 
-    return json.dumps(ret)
+
+@app.route("/user/list")
+def json_list_users():
+    return json.dumps(list_users())
+
 
 @app.route("/user/<ident>/online")
 def user_is_online(ident):
@@ -60,13 +72,6 @@ def user_logout(ident):
 
     return redirect(url_for("get_user_info",ident=ident))
 
-@app.route("/user/list")
-def list_users():
-    ret= []
-    for uid in r.smembers(NS+"all"):
-        nick = r.get(NSL+uid+".name")
-        ret.append(nick)
-    return json.dumps(ret)
 
 @app.route("/user/<ident>")
 def get_user_info(ident):
@@ -89,6 +94,21 @@ def create_user(ident,name):
         r.sadd(NS+"all",hashedId)
     return redirect(url_for("get_user_info",ident=ident))
     
+def list_users():
+    ret= []
+    for uid in r.smembers(NS+"all"):
+        nick = r.get(NSL+uid+".name")
+        ret.append(nick)
+    return ret
+
+def list_online_users():
+    ret= []
+    for uid in r.smembers(NS+"all"):
+        if r.get(NSL+uid+".online"):
+            nick = r.get(NSL+uid+".name")
+            ret.append(nick)
+    return ret
+
 if __name__ == "__main__":
     app.debug = True
     app.run("0.0.0.0")

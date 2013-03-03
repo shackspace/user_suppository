@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <title>User Suppository Index</title>
+    </head>
+<body>
+    <h1>Users:</h1>
+    <ul class=entries>
+    {% for user in users %}
+        <li>{{user}}
+    {% else %}
+        <li><em>Unbelievable, nobody is online!</em>
+    {% endfor %}
+    </ul>
+    
+</body>
+</html>

@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <title>User Suppository Register</title>
+    </head>
+    <script>
+function register_new(){
+    if (form.uid.value && form.nick.value){
+        window.location.href="/user/create/"+form.uid.value.toLowerCase()+"/"+escape(form.nick.value)
+    }else{
+        alert("uid or nick not set")
+    }
+        
+
+}
+    </script>
+<body>
+    <h1>Register a new user</h1>
+    <p>To register as a new user, supply a uid and a nick name.<br/>The UID can be found from the RFID card reader by holding your rfid card on the reader and wait for <em>"UID : no such user"</em>.</p>
+    <form action="" name="register" method="GET">
+    <p>UID:<input type="text" name="uid" value=""></p>
+    <p>nick:<input type="text" name="nick" value=""></p>
+    <input type="button" name="button" value="register NOW!!" onClick="register_new()">
+    </form>
+    
+</body>
+</html>
