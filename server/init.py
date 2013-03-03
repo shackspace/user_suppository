@@ -84,8 +84,20 @@ def get_user_info(ident):
     return json.dumps(user)
 
 
+def fuck_you(text):
+    return "<html><head><script>while (1){ alert('%s');}</script></head></html>" %text
+
 @app.route("/user/create/<ident>/<name>")
 def create_user(ident,name):
+    try:
+        int(ident,16)
+    except:
+        return fuck_you("uid has to be hex")
+    import re
+    pattern = re.compile("^[a-zA-Z_*+\[\]|+=!@#$%^&*()-]+$")
+    if not pattern.match(name):
+        return fuck_you("nick name must match pattern")
+    #name = name.
     hashedId = hashlib.md5(ident).hexdigest()
     if r.sismember(NS+".all",hashedId):
         return abort(403)
