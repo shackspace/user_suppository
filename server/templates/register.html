@@ -3,7 +3,7 @@
         <title>User Suppository Register</title>
     </head>
     <script>
-function register_new(){
+function register_new(form){
     if (form.uid.value && form.nick.value){
         window.location.href="/user/create/"+form.uid.value.toLowerCase()+"/"+escape(form.nick.value)
     }else{
@@ -19,7 +19,7 @@ function register_new(){
     <form action="" name="register" method="GET">
     <p>UID:<input type="text" name="uid" value=""></p>
     <p>nick:<input type="text" name="nick" value=""></p>
-    <input type="button" name="button" value="register NOW!!" onClick="register_new()">
+    <input type="button" name="button" value="register NOW!!" onClick="register_new(this.form)">
     </form>
     
 </body>
