@@ -1,0 +1,11 @@
+// all returns are json
+ident=[0-9A-Z]+ //the unique user id - currently from RFID chips
+
+    /user/online - returns all online users 
+    /user/list   - returns all users
+    /user/<ident>/online - returns if user with 'ident' is online
+    /user/<ident>/name    - returns name of user with ident
+    /user/<ident>/login  - logs user with 'ident' in
+    /user/<ident>/logout -logs out user
+    /user/<ident>       - returns cool info about user with 'ident'
+    /user/create/<ident>/<name> - creates a new user with 'ident' with 'name'
