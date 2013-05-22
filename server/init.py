@@ -42,12 +42,14 @@ def user_is_online(ident):
     """
     TODO generate hash from uid (default is currently RFID-UID)
     """
+    ident = ident.lower()
     hashedId = hashlib.md5(ident).hexdigest()
     if not r.sismember(NS+"all",hashedId): abort(404)
     return json.dumps(r.exists((NSL+hashedId+".online")))
 
 @app.route("/user/<ident>/name")
 def user_name(ident):
+    ident = ident.lower()
     hashedId = hashlib.md5(ident).hexdigest()
     if not r.sismember(NS+"all",hashedId): abort(404)
 
@@ -55,15 +57,18 @@ def user_name(ident):
 
 @app.route("/user/<ident>/login")
 def user_login(ident):
+    ident = ident.lower()
     hashedId = hashlib.md5(ident).hexdigest()
     if not r.sismember(NS+"all",hashedId): abort(404)
 
     r.rpush(NSL+hashedId+".history",str(time.time())+" login")
-    r.setex(NSL+hashedId+".online",86400,"True")
+    # half a day
+    r.setex(NSL+hashedId+".online",86400/2,"True")
     return redirect(url_for("get_user_info",ident=ident))
 
 @app.route("/user/<ident>/logout")
 def user_logout(ident):
+    ident = ident.lower()
     hashedId = hashlib.md5(ident).hexdigest()
     if not r.sismember(NS+"all",hashedId): abort(404)
 
@@ -75,6 +80,7 @@ def user_logout(ident):
 
 @app.route("/user/<ident>")
 def get_user_info(ident):
+    ident = ident.lower()
     hashedId = hashlib.md5(ident).hexdigest()
     if not r.sismember(NS+"all",hashedId): abort(404)
     user = {}
@@ -89,6 +95,7 @@ def fuck_you(text):
 
 @app.route("/user/create/<ident>/<name>")
 def create_user(ident,name):
+    ident = ident.lower()
     try:
         int(ident,16)
     except:
