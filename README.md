@@ -1,3 +1,5 @@
+migrated to new location: https://codeberg.org/shackspace/user_suppository
+
 # User Suppository
 
 ## Create User
